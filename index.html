@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html> 
+	<head>
+		<title>Locator</title>
+		<meta http-equiv="Cache-control" content="no-cache" />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+		
+		<!-- include Custom CSS-->
+		<link href='styles.css' rel='stylesheet' type='text/css'>
+				
+		<!-- include jQuery --> 
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+		
+		<!-- include the Google Maps Javascript API v3 -->
+		<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+		
+		<!-- include JS for the default map -->
+		<script type="text/javascript">
+	      function initialize() {
+	        var mapOptions = {
+	          center: new google.maps.LatLng(36.187852, -94.162881),
+	          zoom: 8,
+	          mapTypeId: google.maps.MapTypeId.ROADMAP
+	        };
+	        var map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+	      }
+	      google.maps.event.addDomListener(window, "load", initialize);
+	    </script>
+							
+		<!-- include Google Fonts -->
+		<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+		<!-- Google Fonts IE8 fix -->
+		<!--[if lte IE 8]>
+		    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400' rel='stylesheet' type='text/css'> 
+		    <link href='http://fonts.googleapis.com/css?family=Open+Sans:700' rel='stylesheet' type='text/css'> 
+		<![endif]-->
+				
+		<script type="text/javascript">
+			/* Mobile Safari: hide address bar */
+			window.addEventListener("load",function() {
+				setTimeout(function(){
+					window.scrollTo(0, 1);
+				}, 0);
+			});
+		</script>	
+	</head>
+	<body>
+		<div id="wrapper">
+			<div id="container">
+			
+			<script type="text/javascript">
+			// Locator, by James E. Martin, wheatdesign.com
+			// Description: The script accepts a user-submitted zip code. It compares this zip against the addresses in the storeLocations array. 
+			//   Stores matches, if any, are pushed to resultsArray. The list of matches is then sent to the Google Maps Geocoder API, which returns the LatLng 
+			//   and plots the results as markers on a map. Results are also echoed as list items in the resultsList. 
+			// Dependencies: jQuery, Google Maps Javascript API v3 (https://developers.google.com/maps/documentation/javascript/), 
+			//   Google Geocoding API (https://developers.google.com/maps/documentation/geocoding/)
+			// Demo: http://wheatdesign.com/demos/locator/
+			
+			$(document).ready(function() {
+			// Avoid errors in browsers that lack a console.
+			//   Source: https://github.com/h5bp/html5-boilerplate/blob/master/js/plugins.js
+			(function() {
+			    var method;
+			    var noop = function () {};
+			    var methods = [
+			        'assert', 'clear', 'count', 'debug', 'dir', 'dirxml', 'error',
+			        'exception', 'group', 'groupCollapsed', 'groupEnd', 'info', 'log',
+			        'markTimeline', 'profile', 'profileEnd', 'table', 'time', 'timeEnd',
+			        'timeStamp', 'trace', 'warn'
+			    ];
+			    var length = methods.length;
+			    var console = (window.console = window.console || {});
+			
+			    while (length--) {
+			        method = methods[length];
+			
+			        // Only stub undefined methods.
+			        if (!console[method]) {
+			            console[method] = noop;
+			        }
+			    }
+			}());
+			
+			// define an array of stores/locations
+			//   Requirement: zip code must be the last five characters of each store/location string. 
+			//   IE8 bug: last string must not be followed by a comma.  
+			var storeLocations = [
+				"Fayetteville Public Library, 401 W Mountain, Fayetteville, AR 72701",
+				"Springdale Public Library, 405 S. Pleasant St. Springdale, AR 72764",
+				"Charleston County Public Library, 68 Calhoun Street, Charleston, SC 29401",
+				"Mount Pleasant Regional Library, 1133 Mathis Ferry Road, Mt. Pleasant, SC 29464",
+				"Central Arkansas Library System: Main Library, 100 Rock Street, Little Rock, AR 72201", 
+				"Tulsa Central Library, 400 Civic Center, Tulsa, OK 74103"
+			];
+			
+			// define an array for results
+			var resultsArray = []; 
+			
+			$("#submitButton").click(function() {
+				
+				// clear any previous results from the screen
+				$('.match').remove();
+				$('.noMatch').remove(); 
+				
+				for ( var i = 0; i < storeLocations.length; i++ ) {
+					// extract the zip code from the storeLocations array elements
+					var thisLength = storeLocations[ i ].length; 
+					var thisStart = thisLength - 5;  
+					var zipCodeToMatch = $("#zipCode").val();
+					var thisZipCode = storeLocations[i].substring(thisStart, thisLength)
+					
+					// test the user-submitted zipcode
+					var zipRegex = /^\d{5}$/; 
+					if (!zipRegex.test(zipCodeToMatch)) {
+						$("#feedback").html("<p>Sorry, no match was found</p>");
+					} else {
+						// exact match:
+						// if user-submitted zip matches a zip in storeLocations, push result into resultsArray
+						/*
+						if (thisZipCode == zipCodeToMatch) {
+							resultsArray.push(storeLocations[ i ]);
+						}
+						*/
+						// first-three match:
+						// if the first three digits of the user-submitted zip matches a zip in storeLocations, push results into resultsArray
+						thisFirstThreeZip = thisZipCode.substring(0, 3); 
+						thisFirstThreeZipToMatch = zipCodeToMatch.substring(0, 3);
+						if (thisFirstThreeZip == thisFirstThreeZipToMatch) {
+							resultsArray.push(storeLocations[ i ]);
+						}
+					}
+				}
+					
+				// echo the latest results
+				if (resultsArray && resultsArray.length) {
+					for ( var i = 0; i < resultsArray.length; i++ ) {
+						$("#resultsList").append("<li class='match'>" + resultsArray[i] + "</li>");
+					}
+				} else {
+					$("#resultsList").append("<li class='noMatch'>Sorry, there were no matches.</li>");
+				}
+				
+				// geocode the address
+				function initialize() {
+				  geocoder = new google.maps.Geocoder();
+				  var latlng = new google.maps.LatLng(36.187852, -94.162881); // Tyson Corporate HQ
+				  var mapOptions = {
+				    zoom: 8,
+				    center: latlng,
+				    mapTypeId: google.maps.MapTypeId.ROADMAP
+				  }
+				  map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+				}
+				initialize(); 
+				
+				function codeAddress(arg) {
+				    var address = arg;
+				    geocoder.geocode( { 'address': address}, function(results, status) {
+				      if (status == google.maps.GeocoderStatus.OK) {
+				        map.setCenter(results[0].geometry.location);
+				        var marker = new google.maps.Marker({
+				            map: map,
+				            title: results[0].formatted_address, 
+				            position: results[0].geometry.location, 
+				        });
+				        
+				        // create an infowindow for the address
+				        var infowindow = new google.maps.InfoWindow ({
+					    	content: '<div>' + results[0].formatted_address + '</div>'
+				        });
+				        
+				        // set a click handler for the marker
+				        google.maps.event.addListener(marker, 'click', function() {
+						  infowindow.open(map,marker);
+						});
+				        
+				      } else {
+				        // console.log("Geocode was not successful for the following reason: " + status);
+				      }
+				    });
+				}
+				
+				// loop through resultsArray, geocoding addresses as you go
+				if (resultsArray.length === null) {
+					// trap nulls, as they throw a JS exception in IE 8	
+				} else {
+					for ( var i = 0; i < resultsArray.length; i++ ) {
+						var arg = resultsArray[ i ];
+						codeAddress(arg);   
+					}
+				}
+						
+				// clear the results array
+				resultsArray = [];
+				 
+				});
+			});
+		
+			</script>
+		
+				<div id="locatorWrapper">
+				
+					<h1>Find a Library</h1>
+					
+					<p>
+						Enter your postal code to search for nearby library locations. 
+						For testing, try 72701, 72764, 29401, 29464, 72201, or 74103.   
+					</p>
+					
+					<div id="locatorForm">
+						<input id="zipCode" placeholder="Postal Code"></input>
+						<button id="submitButton">Find</button>
+					</div>
+					
+					<div class="feedback"></div>
+					
+					<div class="content">
+						<ul id="resultsList">
+						</ul>
+					</div>
+					
+					<!-- display the Google Map -->
+					<div id="map-canvas"></div>
+				
+				</div><!-- /locatorWrapper -->
+			</div><!-- /container -->
+		</div><!-- /wrapper -->
+	</body>
+</html>

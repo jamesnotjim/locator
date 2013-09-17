@@ -1,0 +1,38 @@
+/* styles.css */ 
+body {
+	width: 100%;
+	font-size: 16px; 
+	font-family: 'Open Sans', sans-serif; 
+}
+#wrapper {
+	width: 60%;
+	margin: 0 auto; 
+}
+#container {
+	width: 600px; 
+	position: relative; 
+}
+#locatorWrapper {
+	width: 600px;  	
+}
+#locatorWrapper h1 {
+	margin-top: 0px;
+}
+#locatorWrapper #locatorForm {
+	vertical-align: middle; 
+}
+#locatorWrapper #submitButton {
+	width: 100px;
+}
+#locatorWrapper #zipCode {
+	color: #808080;
+	font-size: 16px; 
+	font-family: 'Open Sans', sans-serif; 
+}
+#locatorWrapper #resultsList li {
+	list-style-type: none; 
+}
+#locatorWrapper #map-canvas {
+	width: 600px; 
+	height: 600px;
+}
