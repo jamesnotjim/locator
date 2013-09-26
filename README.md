@@ -14,7 +14,7 @@ http://wheatdesign.com/demos/locator/
 
 ## Lifecycle
 
-Locator starts with the storeLocations array. When the user submits a zipcode, Locator checks the last five characters of each element in the storeLocations array against the user-submitted zipcode. Matches are pushed into resultsArray. 
+Locator starts with the storeLocations array. Each element in this array must end in a five-digit zipcode (e.g. "1 Infinite Loop, Cupertino, CA 95014"). When the user submits a zipcode, Locator checks the last five characters of each element in the storeLocations array against the user-submitted zipcode. Matches are pushed into resultsArray if the first three characters of the user-submitted zipcode match those of the element. 
 
 Each item in resultsArray is then sent to the Google Geocoding API, which returns a latitude and longitude for each. These latitudes and longitudes are then sent to the Google Maps API, which plots them as markers, populating their titles and infowindows with the formatted address. 
 
